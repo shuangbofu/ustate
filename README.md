@@ -75,5 +75,11 @@
 带宽：宽带1Mbps
 
 ### ----------------------2017年9月28日15:11:37-------------------------
-第二版都写完好久了，今天全部一起上传...因为有很多地方写的不好
-第一版写到6月5号就结束了...
+第二版都写完好久了，今天全部一起上传...因为有很多地方写的不好  
+第一版写到6月5号就结束了...  
+
+  ...
+![Image](https://github.com/shuangbofu/ustate2/blob/master/preview/index.png)  
+![Image](https://github.com/shuangbofu/ustate2/blob/master/preview/detail.png)  
+![Image](https://github.com/shuangbofu/ustate2/blob/master/preview/publish.png)  
+![Image](https://github.com/shuangbofu/ustate2/blob/master/preview/profile.png)  
