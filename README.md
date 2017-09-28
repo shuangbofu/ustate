@@ -78,8 +78,15 @@
 第二版都写完好久了，今天全部一起上传...因为有很多地方写的不好  
 第一版写到6月5号就结束了...  
 
-  ...
-![Image](https://github.com/shuangbofu/ustate2/blob/master/preview/index.png)  
-![Image](https://github.com/shuangbofu/ustate2/blob/master/preview/detail.png)  
-![Image](https://github.com/shuangbofu/ustate2/blob/master/preview/publish.png)  
-![Image](https://github.com/shuangbofu/ustate2/blob/master/preview/profile.png)  
+## 效果图：
+### index页面
+![Image](https://github.com/shuangbofu/ustate/blob/master/preview/index.png)  
+### detail页面
+![Image](https://github.com/shuangbofu/ustate/blob/master/preview/detail.png)  
+### publish页面
+![Image](https://github.com/shuangbofu/ustate/blob/master/preview/publish.png) 
+### profile页面
+![Image](https://github.com/shuangbofu/ustate/blob/master/preview/profile.png)  
+
+## 链接
+[www.ustate.cn/ustate/index](http://www.ustate.cn/ustate/index)
