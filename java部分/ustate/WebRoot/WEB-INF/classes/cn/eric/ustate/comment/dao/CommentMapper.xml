@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.eric.ustate.comment.dao.CommentMapper" >
+  <resultMap id="commentResultMap" type="cn.eric.ustate.comment.entity.Comment" >
+    <id column="cmt_id" property="id" jdbcType="INTEGER" />
+    <result column="cmt_content" property="content" jdbcType="VARCHAR" />
+    <result column="cmt_createtime" property="createtime" jdbcType="TIMESTAMP" />
+    <result column="cmt_stmt_id" property="stmtId" jdbcType="INTEGER" />
+    <result column="cmt_sercret" property="sercret" jdbcType="BIT" />
+    <result column="likeCount" property="likeCount" jdbcType="BIT"/>
+    <result column="liked" property="liked" jdbcType="BIT"/>
+    <result column="originContent" property="originContent" jdbcType="VARCHAR"/>
+    <result column="author" property="author" jdbcType="BIT"/>
+    
+     <association property="profile" javaType="cn.eric.ustate.profile.entity.Profile">
+    	<id column="prof_id" property="profId" jdbcType="INTEGER" />
+	    <result column="prof_nickname" property="nickname" jdbcType="VARCHAR" />
+	    <result column="prof_avatar" property="avatar" jdbcType="VARCHAR" />
+	    <result column="prof_gender" property="gender" jdbcType="BIT" />
+    </association>
+  </resultMap>
+  
+  <select id="list" resultMap="commentResultMap">
+  	select cmt.cmt_id, cmt_content, cmt_createtime, cmt_stmt_id, 
+	prof.prof_id, prof.prof_avatar, prof2.prof_gender, prof.prof_nickname,
+	likeCount<if test="profId!=null">, liked, author</if>
+	from (select * from comment where cmt_stmt_id = #{id}) as cmt
+	left join(
+		select cmt_id, count(l_c_id) as likecount
+		from comment, like_c
+		where cmt_id = l_c_def_id
+		group by cmt_id
+	) as likeCountTable 
+	on cmt.cmt_id = likeCountTable.cmt_id
+	<if test="profId!=null">
+	left join(
+		select count(l_c_id) as liked, l_c_def_id
+		from like_c
+		where l_c_prof_id = #{profId}
+		group by l_c_id
+	) as likeTable
+	on likeTable.l_c_def_id = cmt.cmt_id
+	
+	
+	left join(
+		select count(cmt_id) as author, cmt_id
+		from comment
+		where cmt_prof_id = #{profId}
+		group by cmt_id
+	) as authorTable
+	on authorTable.cmt_id = cmt.cmt_id
+	</if>
+	
+	left join (select prof_id, prof_avatar, prof_nickname from profile) as prof
+	on prof.prof_id = cmt.cmt_prof_id and cmt_sercret = 0
+	
+	left join (select prof_id, prof_gender from profile) as prof2
+	on prof2.prof_id = cmt.cmt_prof_id
+
+	order by cmt.cmt_id asc
+  </select>
+  
+  <insert id="insert" parameterType="cn.eric.ustate.comment.entity.Comment" useGeneratedKeys="true" keyProperty="id">
+  	insert into comment (cmt_content, cmt_createtime, cmt_prof_id, cmt_stmt_id, cmt_sercret) 
+  	values(#{content}, #{createtime}, #{profile.profId}, #{stmtId}, #{sercret})
+  </insert>
+  
+  <select id="getCommentedList" parameterType="Integer" resultMap="commentResultMap">
+  	select cmt.cmt_id, cmt.cmt_stmt_id, cmt.cmt_content, cmt.cmt_createtime, cmt.cmt_sercret, originContent, liked, likeCount, author
+	from (select * from comment where cmt_prof_id = #{profId} 
+	<if test="fromId!=0">
+		and cmt_id &lt; #{fromId}
+	</if>) as cmt
+	
+	left join(
+		select cmt_id, count(l_c_id) as likecount
+		from comment, like_c
+		where cmt_id = l_c_def_id
+		group by cmt_id
+	) as likeCountTable 
+	on cmt.cmt_id = likeCountTable.cmt_id
+	
+	left join(
+		select count(l_c_id) as liked, l_c_def_id
+		from like_c
+		where l_c_prof_id = #{profId}
+		group by l_c_id
+	) as likeTable
+	on likeTable.l_c_def_id = cmt.cmt_id
+	
+	left join(
+		select 1 as author, cmt_id
+		from comment 
+		where cmt_prof_id = #{profId}
+	) as authorTable
+	on authorTable.cmt_id = cmt.cmt_id
+	
+	left join (select stmt_id, stmt_content as originContent from statement) as stmt
+	on stmt.stmt_id = cmt.cmt_stmt_id 
+	
+	order by cmt.cmt_id desc
+	limit 0, 10
+  </select>
+  
+  <delete id="delete">
+  	delete from comment where cmt_prof_id = #{0} and cmt_id = #{1}
+  </delete>
+  
+  <select id="getLikecInfo" parameterType="Integer" resultType="map">
+  	select cmt_prof_id as defProfId, cmt_stmt_id as stmtId
+  	from comment where cmt_id = #{id}
+  </select>
+  
+</mapper>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.eric.ustate.search.dao.SearchMapper" >
+  <resultMap id="SearchResultMap" type="cn.eric.ustate.search.entity.Search" >
+    <id column="sec_id" property="id" jdbcType="INTEGER" />
+    <result column="sec_createtime" property="createtime" jdbcType="TIMESTAMP" />
+    <result column="sec_prof_id" property="profId" jdbcType="INTEGER" />
+    <result column="sec_number" property="number" jdbcType="VARCHAR" />
+    <result column="sec_name" property="name" jdbcType="VARCHAR" />
+    <result column="sec_phone" property="phone" jdbcType="VARCHAR" />
+    <result column="sec_qq" property="qq" jdbcType="VARCHAR" />
+    <result column="sec_type" property="type" jdbcType="BIT" />
+    <result column="sec_status" property="status" jdbcType="BIT"/>
+    <result column="sec_remark" property="remark" jdbcType="VARCHAR"/>
+    <result column="author" property="author" jdbcType="BIT"/>
+    <result column="profNickname" property="profNickname" jdbcType="VARCHAR"/>
+  </resultMap>
+
+	<select id="list" resultMap="SearchResultMap">
+		select sec_id, sec_createtime, sec_prof_id,
+		sec_number, sec_name,
+		sec_phone, sec_qq,
+		sec_type, sec_remark, 
+		author,
+		profNickname 
+		from (select * from search where sec_status = 1
+		<if test="fromId!=0">
+		and sec_id &lt; #{fromId}
+		</if>)  as search
+		left join (select prof_id, count(*) as author
+			from profile
+			where prof_id = #{profId}
+			group by prof_id
+		) as profile
+		on profile.prof_id = sec_prof_id
+		
+		left join (select prof_id, prof_nickname as profNickname from profile) as prof
+		on prof.prof_id = search.sec_prof_id
+		order by search.sec_id desc
+		limit 0, 5
+	</select>
+	
+	<insert id="insert" parameterType="cn.eric.ustate.search.entity.Search" useGeneratedKeys="true" keyProperty="id">
+		insert into search(sec_createtime, sec_prof_id, sec_number, sec_name, sec_phone, sec_qq, sec_type, sec_remark)
+		values (#{createtime}, #{profId}, #{number}, #{name}, #{phone}, #{qq}, #{type}, #{remark})
+	</insert>
+	
+	<delete id="delete">
+		delete from search where sec_id = #{1} and sec_prof_id = #{0} 
+	</delete>
+</mapper>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.eric.ustate.like.dao.LikeCMapper" >
+  <resultMap id="likeCResultMap" type="cn.eric.ustate.like.entity.LikeC" >
+    <id column="l_c_id" property="id" jdbcType="INTEGER" />
+    <result column="l_c_prof_id" property="profId" jdbcType="INTEGER" />
+    <result column="l_c_def_id" property="defId" jdbcType="INTEGER" />
+    <result column="l_c_createtime" property="createtime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  
+   <insert id="insert">
+  	insert into like_c(l_c_prof_id, l_c_createtime, l_c_def_id)
+  	select #{0}, #{1}, #{2}
+  	from DUAL
+  	where not exists
+  	(select l_c_id from like_c where l_c_prof_id = #{0} and l_c_def_id = #{2}) 
+  </insert>
+  
+  <delete id="delete">
+  	delete from like_c where l_c_prof_id = #{0} and (l_c_def_id = #{1} or l_c_def_id is null) 
+  </delete>
+  
+</mapper>

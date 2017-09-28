@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.eric.ustate.like.dao.LikeSMapper" >
+  <resultMap id="likeSResultMap" type="cn.eric.ustate.like.entity.LikeS" >
+    <id column="l_s_id" property="id" jdbcType="INTEGER" />
+    <result column="l_s_prof_id" property="profId" jdbcType="INTEGER" />
+    <result column="l_s_createtime" property="createtime" jdbcType="TIMESTAMP" />
+    <result column="l_s_def_id" property="defId" jdbcType="INTEGER" />
+    
+    <result column="originContent" property="originContent" jdbcType="VARCHAR"/>
+  </resultMap>
+  
+  <insert id="insert">
+  	insert into like_s(l_s_prof_id, l_s_createtime, l_s_def_id) 
+  	select #{0}, #{1}, #{2}
+  	from DUAL
+  	where not exists
+  	(select l_s_id from like_s where l_s_prof_id = #{0} and l_s_def_id = #{2})
+  </insert>
+  
+  <delete id="delete">
+  	delete from like_s where l_s_prof_id = #{0} and (l_s_def_id = #{1} or l_s_def_id is null)
+  </delete>
+  
+  <select id="getLikedList" resultMap="likeSResultMap">
+  	select ls.l_s_id, ls.l_s_createtime, ls.l_s_def_id, originContent
+  	from (select * from like_s where l_s_prof_id = #{profId}
+  	<if test="fromId!=0">
+		and l_s_id &lt; #{fromId}
+	</if>) as ls
+  	left join (select stmt_id, stmt_content as originContent from statement) as stmt
+  	on stmt.stmt_id = ls.l_s_def_id
+  	order by l_s_id desc
+  	limit 0, 10
+  </select>
+</mapper>

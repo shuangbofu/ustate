@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.eric.ustate.profiledetail.dao.ProfiledetailMapper" >
+  <resultMap id="profiledetailResultMap" type="cn.eric.ustate.profiledetail.entity.Profiledetail" >
+    <id column="profdtl_id" property="profdtlId" jdbcType="VARCHAR" />
+    <result column="profdtl_birthday" property="profdtlBirthday" jdbcType="DATE" />
+    <result column="profdtl_address" property="profdtlAddress" jdbcType="VARCHAR" />
+  </resultMap>
+  
+</mapper>

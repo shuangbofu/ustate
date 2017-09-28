@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.eric.ustate.feedback.dao.FeedbackMapper" >
+  <resultMap id="BaseResultMap" type="cn.eric.ustate.feedback.entity.Feedback" >
+    <id column="fb_id" property="id" jdbcType="INTEGER" />
+    <result column="fb_createtime" property="createtime" jdbcType="TIMESTAMP" />
+    <result column="fb_prof_id" property="profId" jdbcType="INTEGER" />
+    <result column="fb_content" property="content" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  
+  <insert id="insert" parameterType="cn.eric.ustate.feedback.entity.Feedback">
+  	insert into feedback(fb_createtime, fb_prof_id, fb_content)
+  	values (#{createtime}, #{profId}, #{content})
+  </insert>
+</mapper>

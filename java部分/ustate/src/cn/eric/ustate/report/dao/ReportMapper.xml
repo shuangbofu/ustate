@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.eric.ustate.report.dao.ReportMapper" >
+  <resultMap id="reportResultMap" type="cn.eric.ustate.report.entity.Report" >
+    <id column="rep_id" property="id" jdbcType="INTEGER" />
+    <result column="rep_createtime" property="createtime" jdbcType="TIMESTAMP" />
+    <result column="rep_prof_id" property="profId" jdbcType="INTEGER" />
+    <result column="rep_def_id" property="defId" jdbcType="INTEGER" />
+    <result column="rep_type_id" property="typeId" jdbcType="BIT" />
+    <result column="rep_content_id" property="contentId" jdbcType="BIT"/>
+  </resultMap>
+ 
+ <insert id="insert" parameterType="cn.eric.ustate.report.entity.Report">
+ 	insert into report (rep_createtime, rep_prof_id, rep_def_id, rep_type_id, rep_content_id)
+ 	values(#{createtime}, #{profId}, #{defId}, #{typeId}, #{contentId})
+ </insert>
+</mapper>

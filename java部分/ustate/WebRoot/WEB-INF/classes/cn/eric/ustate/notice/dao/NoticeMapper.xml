@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.eric.ustate.notice.dao.NoticeMapper" >
+  <resultMap id="noticeResultMap" type="cn.eric.ustate.notice.entity.Notice" >
+    <id column="note_id" property="id" jdbcType="INTEGER" />
+    <result column="note_def_prof_id" property="defProfId" jdbcType="INTEGER" />
+    <result column="note_prof_id" property="profId" jdbcType="INTEGER"/>
+    <result column="note_stmt_id" property="stmtId" jdbcType="INTEGER" />
+    <result column="note_cmt_id" property="cmtId" jdbcType="INTEGER"/>
+    <result column="note_status" property="status" jdbcType="TINYINT" />
+    <result column="note_type" property="type" jdbcType="TINYINT" />
+    <result column="note_createtime" property="createtime" jdbcType="TIMESTAMP" />
+    <result column="content" property="content" jdbcType="VARCHAR"/>
+    <result column="originContent" property="originContent" jdbcType="VARCHAR"/>
+  </resultMap>
+  
+ 
+  <select id="getCount" parameterType="Integer" resultType="Integer">
+  	select count(*) from notice where note_def_prof_id = #{defProfId} and note_status = 1
+  </select>
+  
+  <select id="list" resultMap="noticeResultMap">
+  	select note_id, note_prof_id, note_def_prof_id, note_stmt_id, note_cmt_id,  note_type, note_createtime, content, originContent
+  	from (select * from notice where note_def_prof_id = #{defProfId}
+  	<if test="fromId!=0">
+		and note_id &lt; #{fromId}
+	</if>) as note
+  	
+  	left join (select stmt_id, stmt_content as originContent from statement) as stmt
+  	on stmt_id = note.note_stmt_id and note_type > 1 and note_stmt_id is not null
+  	
+  	left join (select cmt_id, cmt_content as content from comment) as cmt
+  	on cmt.cmt_id = note.note_cmt_id and (note_type = 1 or note_type = 3) and note.note_cmt_id is not null
+  	
+  	order by note_id desc
+  	limit 0, 10
+  </select>
+  
+  <insert id="insertCommentNotice">
+  	insert into notice (note_prof_id, note_def_prof_id, note_cmt_id, note_stmt_id, note_type, note_createtime)
+  	values (#{profId}, #{defProfId}, #{cmtId}, #{stmtId}, 3, #{createtime})
+  </insert>
+  	
+  <insert id="insertLikeSNotice">
+  	insert into notice (note_prof_id, note_def_prof_id, note_stmt_id, note_type, note_createtime) 
+  	select #{profId}, #{defProfId}, #{stmtId}, 2, #{createtime}
+  	from DUAL
+  	where not exists
+  	(select 1 from notice where note_def_prof_id = #{defProfId} and note_stmt_id = #{stmtId} and note_type = 2 and note_prof_id = #{profId})
+  </insert>
+  
+  <insert id="insertLikeCNotice">
+  	insert into notice (note_prof_id, note_def_prof_id, note_cmt_id, note_stmt_id,  note_type, note_createtime) 
+  	select #{profId}, #{defProfId}, #{cmtId}, #{stmtId}, 1, #{createtime}
+  	from DUAL
+  	where not exists
+  	(select 1 from notice where note_def_prof_id = #{defProfId} and note_cmt_id = #{cmtId} and note_type = 1 and note_prof_id = #{profId})
+  </insert>
+  
+  <update id="resetStatus" parameterType="Integer">
+  	update notice set note_status = 0 where note_def_prof_id = #{defProfId} and note_status = 1
+  </update>
+</mapper>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.eric.ustate.profile.dao.ProfileMapper" >
+  <resultMap id="profileResultMap" type="cn.eric.ustate.profile.entity.Profile" >
+    <id column="prof_id" property="profId" jdbcType="INTEGER" />
+    <result column="prof_nickname" property="nickname" jdbcType="VARCHAR" />
+    <result column="prof_avatar" property="avatar" jdbcType="VARCHAR" />
+    <result column="prof_gender" property="gender" jdbcType="BIT" />
+    
+    <result column="likePostsCount" property="likePostsCount" jdbcType="INTEGER"/>
+    <result column="postsCount" property="postsCount" jdbcType="INTEGER"/>
+    <result column="commentPostsCount" property="commentPostsCount" jdbcType="INTEGER"/>
+    <result column="noticeTotalCount" property="noticeTotalCount" jdbcType="INTEGER"/>
+  </resultMap>
+  
+  <select id="selectById" parameterType="Integer" resultMap="profileResultMap">  	
+  	select prof_id, prof_nickname, prof_avatar, prof_gender, likePostsCount, postsCount, commentPostsCount, noticeTotalCount
+  	from (select * from profile where prof_id = #{profId}) as prof
+	left join (
+		select count(l_s_id) as likePostsCount from like_s where l_s_prof_id = #{profId}) as table1
+	on 1
+	
+	left join (
+		select count(stmt_id) as postsCount from statement where stmt_prof_id = #{profId}) as table2
+	on 1
+	
+	left join (
+		select count(cmt_id) as commentPostsCount from comment where cmt_prof_id = #{profId}) as table3
+	on 1
+	
+	left join (
+		select count(note_id) as noticeTotalCount from notice where note_def_prof_id = #{profId}) as table4
+	on 1
+  </select>
+  
+  <select id="list" resultMap="profileResultMap">
+  	select prof_id, prof_gender, prof_nickname, prof_avatar from profile
+  </select>
+  
+</mapper>

@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.eric.ustate.statement.dao.StatementMapper" >
+  <resultMap id="statementResultMap" type="cn.eric.ustate.statement.entity.Statement" >
+    <id column="stmt_id" property="id" jdbcType="INTEGER" />
+    <result column="stmt_content" property="content" jdbcType="VARCHAR" />
+    <result column="stmt_createtime" property="createtime" jdbcType="TIMESTAMP" />
+    <result column="stmt_sercret" property="sercret" jdbcType="BIT" />
+    <result column="commentCount" property="commentCount" jdbcType="BIT"/>
+    <result column="likeCount" property="likeCount" jdbcType="BIT"/>
+    <result column="liked" property="liked" jdbcType="BIT"/>
+    <result column="author" property="author" jdbcType="BIT"/>
+     
+    <association property="profile" javaType="cn.eric.ustate.profile.entity.Profile">
+    	<id column="prof_id" property="profId" jdbcType="INTEGER" />
+	    <result column="prof_nickname" property="nickname" jdbcType="VARCHAR" />
+	    <result column="prof_avatar" property="avatar" jdbcType="VARCHAR" />
+	    <result column="prof_gender" property="gender" jdbcType="BIT" />
+    </association>
+    
+    
+  </resultMap>
+  
+  <select id="list" resultMap="statementResultMap">
+	select stmt.stmt_id, stmt.stmt_content, stmt.stmt_createtime, stmt.stmt_sercret,
+	prof.prof_id, prof.prof_avatar, prof2.prof_gender, prof.prof_nickname,
+	commentCount, likeCount<if test="profId!=null">, liked, author</if>
+	from (select * from statement 
+	<if test="fromId!=0">
+		where stmt_id &lt; #{fromId}
+	</if> ) as stmt
+	
+	left join(
+		select stmt_id, count(cmt_id) as commentCount
+		from statement, comment
+		where stmt_id = cmt_stmt_id
+		group by stmt_id
+	) as cmtCountTable
+	on stmt.stmt_id = cmtCountTable.stmt_id
+	
+	left join(
+		select stmt_id, count(l_s_id) as likeCount
+		from statement, like_s
+		where stmt_id = l_s_def_id
+		group by stmt_id
+	) as praiseCountTable 
+	on stmt.stmt_id = praiseCountTable.stmt_id
+	<if test="profId!=null">
+	left join(
+	    select count(l_s_id) as liked , l_s_def_id
+	    from like_s
+	    where l_s_prof_id = #{profId}
+	    group by l_s_id
+	) as likeTable
+	on l_s_def_id = stmt.stmt_id
+	
+	left join (
+		select stmt_id, count(stmt_id) as author 
+		from statement
+		where stmt_prof_id = #{profId}
+		group by stmt_id
+	) as authorTable
+	on authorTable.stmt_id = stmt.stmt_id
+	</if>
+	left join (select prof_id, prof_avatar, prof_nickname from profile) as prof
+	on prof.prof_id = stmt.stmt_prof_id and stmt_sercret = 0
+	
+	left join (select prof_id, prof_gender from profile) as prof2
+	on prof2.prof_id = stmt.stmt_prof_id
+	
+	group by stmt.stmt_id
+	order by stmt.stmt_id desc
+	limit 0, 15
+  </select>
+  
+  <select id="hotList" resultMap="statementResultMap">
+  	select stmt.stmt_id, stmt.stmt_content, stmt.stmt_createtime, stmt.stmt_sercret,
+	prof.prof_id, prof.prof_avatar, prof2.prof_gender, prof.prof_nickname,
+	commentCount, likeCount<if test="profId!=null">, liked, author</if>
+	from (select * from statement 
+	<if test="fromId!=0">
+		where stmt_id &lt; #{fromId}
+	</if> ) as stmt
+	left join(
+		select stmt_id, count(cmt_id) as commentCount
+		from statement, comment
+		where stmt_id = cmt_stmt_id
+		group by stmt_id
+	) as cmtCountTable
+	on stmt.stmt_id = cmtCountTable.stmt_id
+	
+	left join(
+		select stmt_id, count(l_s_id) as likeCount
+		from statement, like_s
+		where stmt_id = l_s_def_id
+		group by stmt_id
+	) as praiseCountTable 
+	on stmt.stmt_id = praiseCountTable.stmt_id
+	<if test="profId!=null">
+	left join(
+	    select count(l_s_id) as liked , l_s_def_id
+	    from like_s
+	    where l_s_prof_id = #{profId}
+	    group by l_s_id
+	) as likeTable
+	on l_s_def_id = stmt.stmt_id
+	
+	
+	left join (
+		select stmt_id, count(stmt_id) as author 
+		from statement
+		where stmt_prof_id = #{profId}
+		group by stmt_id
+	) as authorTable
+	on authorTable.stmt_id = stmt.stmt_id
+	</if>
+	left join (select prof_id, prof_avatar, prof_nickname from profile) as prof
+	on prof.prof_id = stmt.stmt_prof_id and stmt_sercret = 0
+	
+	left join (select prof_id, prof_gender from profile) as prof2
+	on prof2.prof_id = stmt.stmt_prof_id
+	
+	where likeCount >= 10
+	group by stmt.stmt_id
+	order by stmt.stmt_id desc
+	limit 0, 10
+  </select>
+  
+  
+  <select id="getDetail" resultMap="statementResultMap">
+  	select stmt.stmt_id, stmt.stmt_content, stmt.stmt_createtime, stmt.stmt_sercret,
+	prof.prof_id, prof.prof_avatar, prof2.prof_gender, prof.prof_nickname,
+	commentCount, likeCount<if test="profId!=null">, liked, author</if>
+	from (select * from statement where stmt_id = #{id}) as stmt
+	
+	left join(
+		select count(cmt_id) as commentCount
+		from comment
+		where cmt_stmt_id = #{id}
+	) as cmtCountTable
+	on 1
+	
+	left join(
+		select count(l_s_id) as likeCount
+		from like_s
+		where l_s_def_id = #{id}
+	) as praiseCountTable 
+	on 1
+	<if test="profId!=null">
+	left join(
+	    select count(l_s_id) as liked
+	    from like_s
+	    where l_s_prof_id = #{profId} and l_s_def_id = #{id}
+	) as likeTable
+	on 1
+	
+	left join(
+		select count(stmt_id) as author
+		from statement
+		where stmt_prof_id = #{profId} and stmt_id = #{id}
+	) as authorTable
+	on 1
+	</if>
+	left join (select prof_id, prof_avatar, prof_nickname from profile) as prof
+	on prof.prof_id = stmt.stmt_prof_id and stmt_sercret = 0
+	
+	left join (select prof_id, prof_gender from profile) as prof2
+	on prof2.prof_id = stmt.stmt_prof_id
+  </select>
+  
+  <select id="getPostedList" parameterType="Integer" resultMap="statementResultMap">
+  	select stmt.stmt_id, stmt.stmt_content, stmt.stmt_createtime, stmt.stmt_sercret,
+	prof.prof_id, prof.prof_avatar, prof2.prof_gender, prof.prof_nickname,
+	commentCount, likeCount, liked, author
+	from (select * from statement 
+	where stmt_prof_id = #{profId}
+	<if test="fromId!=0">
+		and stmt_id &lt; #{fromId}
+	</if> ) as stmt
+	
+	left join(
+		select stmt_id, count(cmt_id) as commentCount
+		from statement, comment
+		where stmt_id = cmt_stmt_id
+		group by stmt_id
+	) as cmtCountTable
+	on stmt.stmt_id = cmtCountTable.stmt_id
+	
+	left join(
+		select stmt_id, count(l_s_id) as likeCount
+		from statement, like_s
+		where stmt_id = l_s_def_id
+		group by stmt_id
+	) as praiseCountTable 
+	on stmt.stmt_id = praiseCountTable.stmt_id
+	
+	left join(
+	    select count(l_s_id) as liked , l_s_def_id
+	    from like_s
+	    where l_s_prof_id = #{profId}
+	    group by l_s_id
+	) as likeTable
+	on l_s_def_id = stmt.stmt_id
+	
+	left join (
+		select stmt_id, 1 as author 
+		from statement
+		where stmt_prof_id = #{profId}
+	) as authorTable
+	on stmt.stmt_id = authorTable.stmt_id 
+	
+	left join (select prof_id, prof_avatar, prof_nickname from profile) as prof
+	on prof.prof_id = stmt.stmt_prof_id and stmt_sercret = 0
+	
+	left join (select prof_id, prof_gender from profile) as prof2
+	on prof2.prof_id = stmt.stmt_prof_id
+	
+	group by stmt.stmt_id
+	
+	order by stmt.stmt_id desc
+	limit 0, 10
+  </select>
+  
+  <select id="getProfId" parameterType="Integer" resultType="Integer">
+  	select stmt_prof_id from statement where stmt_id = #{id}
+  </select>
+  
+  <insert id="insert" parameterType="cn.eric.ustate.statement.entity.Statement" useGeneratedKeys="true" keyProperty="id">
+  	insert into statement (stmt_content, stmt_createtime, stmt_prof_id, stmt_sercret) 
+  	values(#{content}, #{createtime}, #{profile.profId}, #{sercret})
+  </insert>
+  
+  <delete id="delete">
+  	delete from statement where stmt_prof_id = #{0} and stmt_id = #{1}
+  </delete>
+</mapper>
